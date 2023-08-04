@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 abstract contract PetalexActions {
-    address private _actionExecutor;
+    address internal _actionExecutor;
 
     // TODO: action executor actions affect different metadata values for nft
 

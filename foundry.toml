@@ -7,8 +7,6 @@ evm_version = 'shanghai'
 optimizer = true
 optimizer_runs = 20_000
 
-remappings = ["@openzeppelin/=lib/openzeppelin-contracts/", "@chainlink/=lib/chainlink/"]
-
 [rpc_endpoints]
 mainnet = "${MAINNET_RPC_URL}"
 goerli = "${GOERLI_RPC_URL}"

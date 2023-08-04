@@ -10,3 +10,15 @@
 [submodule "lib/chainlink"]
 	path = lib/chainlink
 	url = git@github.com:smartcontractkit/chainlink.git
+[submodule "lib/Gravita-SmartContracts"]
+	path = lib/Gravita-SmartContracts
+	url = git@github.com:Gravita-Protocol/Gravita-SmartContracts.git
+[submodule "lib/permit2"]
+	path = lib/permit2
+	url = git@github.com:Uniswap/permit2.git
+[submodule "lib/v3-core"]
+	path = lib/v3-core
+	url = git@github.com:Uniswap/v3-core.git
+[submodule "lib/v3-periphery"]
+	path = lib/v3-periphery
+	url = git@github.com:Uniswap/v3-periphery.git

@@ -1,0 +1,8 @@
+Gravita-SmartContracts/=lib/Gravita-SmartContracts/
+forge-std/=lib/forge-std/src/
+@openzeppelin/=lib/openzeppelin-contracts/
+oz-upgradeable/=lib/openzeppelin-contracts-upgradeable/contracts/
+@chainlink/=lib/chainlink/
+permit2/=lib/permit2/
+@uniswap/v3-core/=lib/v3-core/
+@uniswap-v3-periphery/=lib/v3-periphery/contracts/

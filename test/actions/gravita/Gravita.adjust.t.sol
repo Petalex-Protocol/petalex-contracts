@@ -96,7 +96,7 @@ contract GravitaAdjustTest is ActionTestHelpers {
             PullToken.Params memory pullParams = PullToken.Params(MAINNET_WETH, user, col);
             GravitaOpen.Params memory params = GravitaOpen.Params(MAINNET_WETH, col, debt, prevId, nextId);
             GravitaAdjust.Params memory adjustParams =
-                GravitaAdjust.Params(MAINNET_WETH, col, 0, debt, true, prevIdAdjust, nextIdAdjust);
+                GravitaAdjust.Params(MAINNET_WETH, col, 0, 1000e18, false, prevIdAdjust, nextIdAdjust);
             SendToken.Params memory sendDebtParams = SendToken.Params(MAINNET_GRAI, user, debt);
             callData[1] = abi.encode(params);
             callData[0] = abi.encode(pullParams);
@@ -112,7 +112,7 @@ contract GravitaAdjustTest is ActionTestHelpers {
         vm.prank(user);
         IERC20(MAINNET_WETH).approve(proxyAddress, col + col);
 
-        vm.expectRevert(bytes("SafeERC20: low-level call failed"));
+        vm.expectRevert(bytes("BorrowerOps: Caller doesnt have enough debt tokens to make repayment"));
         vm.prank(user);
         actionExecutor.executeActionList(ActionExecutor.ActionList(callData, actionIds, tokenId));
     }

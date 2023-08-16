@@ -38,14 +38,17 @@ contract ActionExecutor is Ownable {
         address proxy = _nftProxy.getProxyAddressForToken(actionList.tokenId);
         bytes32[] memory response = new bytes32[](actionList.callData.length);
 
+        // if flashloan then do that one first and call the rest after from the callback
         if (_firstActionIsFlashloan(actionList)) {
             response[0] = _executeFlashloanAction(actionList);
             return response;
         }
-
-        // if flashloan then do that one first and call the rest after from the callback
+        
+        uint32 actionRolls = 0;
         for (uint8 i = 0; i < actionList.callData.length; i++) {
-            response[i] = _executeAction(actionList, i, proxy);
+            address actionAddr = _checkActionSet(actionList.actionIds[i]);            
+            response[i] = _executeAction(actionList, i, actionAddr, proxy);
+            actionRolls += ActionBase(actionAddr).actionRollWeight();
         }
         return response;
     }
@@ -60,8 +63,11 @@ contract ActionExecutor is Ownable {
         bytes32[] memory response = new bytes32[](actionList.callData.length - 1);
 
         // skip first action since it was already executed
+        uint32 actionRolls = 0; // flash loans don't have action rolls
         for (uint8 i = 1; i < actionList.callData.length; i++) {
-            response[i - 1] = _executeAction(actionList, i, proxy);
+            address actionAddr = _checkActionSet(actionList.actionIds[i]);
+            response[i - 1] = _executeAction(actionList, i, actionAddr, proxy);
+            actionRolls += ActionBase(actionAddr).actionRollWeight();
         }
         return response;
     }
@@ -86,9 +92,7 @@ contract ActionExecutor is Ownable {
         return response;
     }
 
-    function _executeAction(ActionList calldata actionList, uint8 index, address proxy) internal returns (bytes32) {
-        address actionAddr = _checkActionSet(actionList.actionIds[index]);
-
+    function _executeAction(ActionList calldata actionList, uint8 index, address actionAddr, address proxy) internal returns (bytes32) {
         return IDSProxy(proxy).execute(
             actionAddr, abi.encodeWithSignature("executeAction(bytes)", actionList.callData[index])
         );

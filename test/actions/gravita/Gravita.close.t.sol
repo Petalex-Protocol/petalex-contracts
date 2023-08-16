@@ -20,7 +20,7 @@ contract GravitaCloseTest is ActionTestHelpers {
         vm.selectFork(_mainnetFork);
         vm.rollFork(17814506);
 
-        gravitaClose = new GravitaClose(MAINNET_BORROWER_OPERATIONS);
+        gravitaClose = new GravitaClose(MAINNET_BORROWER_OPERATIONS, 1);
         deal(MAINNET_WETH, user, 1000000e18);
     }
 

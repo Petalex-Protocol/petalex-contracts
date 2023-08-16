@@ -61,7 +61,6 @@ contract ExchangeUniswapV3ExactInputTest is ActionTestHelpers {
         PullToken pullToken = new PullToken();
         actionExecutor.setActionIdToAddress(2, address(pullToken));
         uint256 tokenId = mintNFT(user);
-        address proxyAddress = IPetalexNFT(address(petalexProxy)).getProxyAddressForToken(tokenId);
 
         bytes[] memory callData = new bytes[](2);
         PullToken.Params memory pullParams = PullToken.Params(MAINNET_WETH, user, 1e18);

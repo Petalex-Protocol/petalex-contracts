@@ -11,8 +11,9 @@ contract GravitaClose is ActionBase {
 
     IBorrowerOperations private immutable _gravitaBorrowerOperations;
 
-    constructor(address gravitaBorrowerOperations) {
+    constructor(address gravitaBorrowerOperations, uint8 actionRollWeight) {
         _gravitaBorrowerOperations = IBorrowerOperations(gravitaBorrowerOperations);
+        _actionRollWeight = actionRollWeight;
     }
 
     function executeAction(bytes memory _callData) public payable virtual override returns (bytes32) {

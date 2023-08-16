@@ -10,7 +10,6 @@ import {IPriceFeed} from "src/actions/liquity/Interfaces/IPriceFeed.sol";
 import {ISortedTroves} from "src/actions/liquity/Interfaces/ISortedTroves.sol";
 import {IHintHelpers} from "src/actions/liquity/Interfaces/IHintHelpers.sol";
 import {IPetalexNFT} from "src/interfaces/IPetalexNFT.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract LiquityRedeemTest is LiquityHelpers {
     uint256 _mainnetFork;
@@ -42,6 +41,7 @@ contract LiquityRedeemTest is LiquityHelpers {
         bytes[] memory callData = new bytes[](1);
         uint8[] memory actionIds = new uint8[](1);
         uint256 debt = 50_000e18;
+        uint256 adjustedDebt;
         uint256 price = IPriceFeed(MAINNET_LIQUITY_PRICE_FEED).fetchPrice();
         {
             (address firstRedemptionHint, uint256 partialRedemptionHintNewICR, uint256 truncatedLUSDamount ) = IHintHelpers(MAINNET_LIQUITY_HINT_HELPERS).getRedemptionHints(
@@ -49,6 +49,7 @@ contract LiquityRedeemTest is LiquityHelpers {
                 price,
                 0
             );        
+            adjustedDebt = truncatedLUSDamount;   
             uint256 size = ISortedTroves(MAINNET_LIQUITY_SORTED_TROVES).getSize();
             (address hintAddress, ,) = IHintHelpers(MAINNET_LIQUITY_HINT_HELPERS).getApproxHint(partialRedemptionHintNewICR, size, 1337);
             (address upperHint, address lowerHint) = ISortedTroves(MAINNET_LIQUITY_SORTED_TROVES).findInsertPosition(partialRedemptionHintNewICR, hintAddress, hintAddress);
@@ -63,7 +64,7 @@ contract LiquityRedeemTest is LiquityHelpers {
         bytes32[] memory response =
             actionExecutor.executeActionList(ActionExecutor.ActionList(callData, actionIds, tokenId));
         assertEq(response.length, 1);
-        assertEq(response[0], bytes32(debt));
+        assertEq(response[0], bytes32(adjustedDebt));
         assertApproxEqAbs(address(proxyAddress).balance * price / 1e18, debt, 3_000e17);
     }
 }

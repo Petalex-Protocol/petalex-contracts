@@ -10,18 +10,11 @@ import {IVesselManagerOperations} from "Gravita-SmartContracts/contracts/Interfa
 import {ISortedVessels} from "Gravita-SmartContracts/contracts/Interfaces/ISortedVessels.sol";
 import {IPetalexNFT} from "src/interfaces/IPetalexNFT.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import {PullToken} from "src/actions/utils/PullToken.sol";
-import {SendToken} from "src/actions/utils/SendToken.sol";
-import {FlashUniV3} from "src/actions/flashloan/FlashUniV3.sol";
-import {UniswapV3SwapExactInput} from "src/actions/exchange/UniswapV3SwapExactInput.sol";
 
 contract GravitaRedeemTest is ActionTestHelpers {
     uint256 _mainnetFork;
 
     GravitaRedeem gravitaRedeem;
-    GravitaOpen gravitaOpen;
-    FlashUniV3 flashUniV3;
 
     function setUp() public {
         _mainnetFork = vm.createFork(MAINNET_RPC_URL);
@@ -29,22 +22,7 @@ contract GravitaRedeemTest is ActionTestHelpers {
         vm.rollFork(17814506);
 
         _deployActionExecutorAndProxy();
-        gravitaRedeem = new GravitaRedeem(MAINNET_VESSEL_MANAGER_OPERATIONS, MAINNET_GRAI);                
-        gravitaOpen = new GravitaOpen(MAINNET_BORROWER_OPERATIONS);
-        flashUniV3 = new FlashUniV3(MAINNET_UNISWAP_FACTORY, address(actionExecutor), address(petalexProxy));
-        deal(MAINNET_WETH, user, 1_000_000e18);        
-    }
-
-    function _deploySubActions() internal {
-        actionExecutor.setActionIdToAddress(3, address(flashUniV3));
-        actionExecutor.setActionIdToAddress(1, address(gravitaOpen));
-        PullToken pullToken = new PullToken();
-        actionExecutor.setActionIdToAddress(2, address(pullToken));
-
-        UniswapV3SwapExactInput exchange = new UniswapV3SwapExactInput(MAINNET_SWAP_ROUTER);
-        actionExecutor.setActionIdToAddress(4, address(exchange));
-        SendToken sendToken = new SendToken();
-        actionExecutor.setActionIdToAddress(5, address(sendToken));
+        gravitaRedeem = new GravitaRedeem(MAINNET_VESSEL_MANAGER_OPERATIONS, MAINNET_GRAI);
     }
 
     function _getWethSpotPrice() internal view returns (uint256) {
@@ -63,18 +41,20 @@ contract GravitaRedeemTest is ActionTestHelpers {
         bytes[] memory callData = new bytes[](1);
         uint8[] memory actionIds = new uint8[](1);
         uint256 debt = 50_000e18;
+        uint256 adjustedDebt;
         uint256 price = _getWethSpotPrice();
         {
-            (address firstRedemptionHint, uint256 partialRedemptionHintNewICR, ) = IVesselManagerOperations(MAINNET_VESSEL_MANAGER_OPERATIONS).getRedemptionHints(
+            (address firstRedemptionHint, uint256 partialRedemptionHintNewICR, uint256 truncatedGraiAmount ) = IVesselManagerOperations(MAINNET_VESSEL_MANAGER_OPERATIONS).getRedemptionHints(
                 MAINNET_WETH,
                 debt,
                 price,
                 0
-            );        
+            );
+            adjustedDebt = truncatedGraiAmount;   
             uint256 size = ISortedVessels(MAINNET_SORTED_VESSELS).getSize(MAINNET_WETH);
-            (address hintAddress, ,) = IVesselManagerOperations(MAINNET_VESSEL_MANAGER_OPERATIONS).getApproxHint(MAINNET_WETH, 11e17, size, 1337);
+            (address hintAddress, ,) = IVesselManagerOperations(MAINNET_VESSEL_MANAGER_OPERATIONS).getApproxHint(MAINNET_WETH, partialRedemptionHintNewICR, size, 1337);
             (address upperHint, address lowerHint) = ISortedVessels(MAINNET_SORTED_VESSELS).findInsertPosition(MAINNET_WETH, partialRedemptionHintNewICR, hintAddress, hintAddress);
-            GravitaRedeem.Params memory params = GravitaRedeem.Params(MAINNET_WETH, debt, upperHint, lowerHint, firstRedemptionHint, partialRedemptionHintNewICR, 0, 1e18);
+            GravitaRedeem.Params memory params = GravitaRedeem.Params(MAINNET_WETH, truncatedGraiAmount, upperHint, lowerHint, firstRedemptionHint, partialRedemptionHintNewICR, 0, 1e18);
             callData[0] = abi.encode(params);        
             actionIds[0] = 1;
         }
@@ -85,8 +65,7 @@ contract GravitaRedeemTest is ActionTestHelpers {
         bytes32[] memory response =
             actionExecutor.executeActionList(ActionExecutor.ActionList(callData, actionIds, tokenId));
         assertEq(response.length, 1);
-        assertEq(response[0], bytes32(debt));
+        assertEq(response[0], bytes32(adjustedDebt));
         assertApproxEqAbs(IERC20(MAINNET_WETH).balanceOf(proxyAddress) * price / 1e18, debt, 3_000e18);
-        console.log(debt - (IERC20(MAINNET_WETH).balanceOf(proxyAddress) * price / 1e18));
     }
 }

@@ -8,11 +8,10 @@ optimizer = true
 optimizer_runs = 20_000
 
 [rpc_endpoints]
+devnet = "${DEVNET_RPC_URL}"
 mainnet = "${MAINNET_RPC_URL}"
-goerli = "${GOERLI_RPC_URL}"
 
 [etherscan]
 mainnet = { key = "${MAINNET_ETHERSCAN_API_KEY}" }
-goerli = { key = "${GOERLI_ETHERSCAN_API_KEY}" }
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

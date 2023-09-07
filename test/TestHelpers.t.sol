@@ -41,10 +41,12 @@ contract TestHelpers is Test {
     address public constant MAINNET_PERMIT2 = address(0x000000000022D473030F116dDEE9F6B43aC78BA3);
     address public constant MAINNET_GRAI_USDC_POOL = address(0x5db3D38bD40C862BA1fDB2286c32A62ab954d36D);
     address public constant MAINNET_USDC_ETH_POOL = address(0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640);
+    address public constant MAINNET_STFRXETH = address(0xac3E018457B222d93114458476f3E3416Abbe38F);
 
     string public constant GET_PROXY_ADDRESS_FOR_TOKEN_SIGNATURE = "getProxyAddressForToken(uint256)";
     string public constant MINT_BATCH_SIGNATURE = "mintBatch(address,uint256[],bytes)";
     string public constant BALANCE_OF_SIGNATURE = "balanceOf(address,uint256)";
+    string public constant OWNED_TOKENS_SIGNATURE = "getOwnedTokens(address)";
 
     bytes32 public constant TOKEN_PERMISSIONS_TYPEHASH = keccak256("TokenPermissions(address token,uint256 amount)");
     bytes32 public constant PERMIT_TRANSFER_FROM_TYPEHASH = keccak256(

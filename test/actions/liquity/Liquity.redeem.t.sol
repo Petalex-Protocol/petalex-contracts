@@ -3,8 +3,8 @@ pragma solidity ^0.8.20;
 
 import {LiquityHelpers} from "./LiquityHelpers.t.sol";
 import {ActionExecutor} from "src/ActionExecutor.sol";
-import {LiquityRedeem} from "src/actions/liquity/LiquityRedeem.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
+import {LiquityRedeem} from "src/actions/liquity/LiquityRedeem.sol";
 import {ITroveManager} from "src/actions/liquity/Interfaces/ITroveManager.sol";
 import {IPriceFeed} from "src/actions/liquity/Interfaces/IPriceFeed.sol";
 import {ISortedTroves} from "src/actions/liquity/Interfaces/ISortedTroves.sol";
@@ -14,7 +14,7 @@ import {IPetalexNFT} from "src/interfaces/IPetalexNFT.sol";
 contract LiquityRedeemTest is LiquityHelpers {
     uint256 _mainnetFork;
 
-    LiquityRedeem gravitaRedeem;
+    LiquityRedeem liquityRedeem;
 
     function setUp() public {
         _mainnetFork = vm.createFork(MAINNET_RPC_URL);
@@ -22,7 +22,7 @@ contract LiquityRedeemTest is LiquityHelpers {
         vm.rollFork(17814506);
 
         _deployActionExecutorAndProxy();
-        gravitaRedeem = new LiquityRedeem(MAINNET_LIQUITY_TROVE_MANAGER, MAINNET_LIQUITY_LUSD);
+        liquityRedeem = new LiquityRedeem(MAINNET_LIQUITY_TROVE_MANAGER, MAINNET_LIQUITY_LUSD);
     }
 
     function _getWethSpotPrice() internal view returns (uint256) {
@@ -35,7 +35,7 @@ contract LiquityRedeemTest is LiquityHelpers {
     function test_RedeemLusd() public {
         vm.selectFork(_mainnetFork);
         _deployActionExecutorAndProxy();
-        actionExecutor.setActionIdToAddress(1, address(gravitaRedeem));
+        actionExecutor.setActionIdToAddress(1, address(liquityRedeem));
         uint256 tokenId = mintNFT(user);
         address proxyAddress = IPetalexNFT(address(petalexProxy)).getProxyAddressForToken(tokenId);
         bytes[] memory callData = new bytes[](1);

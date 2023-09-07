@@ -15,6 +15,7 @@ contract PetalexNFT is PetalexActions, ERC1155Upgradeable, UUPSUpgradeable, Owna
     DSProxyFactory private _proxyFactory;    
     mapping(uint256 => address) private _proxyAddresses;
     mapping(address => uint256[]) private _ownedTokens;
+    mapping(uint256 => bool) private _tokenExists;
 
     address private _royaltyReceiver;
     uint8 private _royaltyFee; // base 1000, highest is 25.5
@@ -50,7 +51,7 @@ contract PetalexNFT is PetalexActions, ERC1155Upgradeable, UUPSUpgradeable, Owna
 
     // END UPGRADABLE
 
-    function mintBatch(address to, uint256[] calldata ids, bytes calldata data) public {
+    function mintBatch(address to, uint256[] calldata ids, bytes calldata data) public payable {
         require(_actionExecutor != address(0), "Action executor not set");
         require(to != address(0), "Zero address");
         require(ids.length > 0, "Too little");
@@ -58,17 +59,32 @@ contract PetalexNFT is PetalexActions, ERC1155Upgradeable, UUPSUpgradeable, Owna
 
         uint256[] memory amounts = new uint256[](ids.length);
         for (uint256 i = 0; i < ids.length; i++) {
+            require(_tokenExists[ids[i]] == false, "Token already exists");
             amounts[i] = 1;
         }
         _mintBatch(to, ids, amounts, data);
         for (uint256 i = 0; i < ids.length; i++) {
             DSProxy proxy = _proxyFactory.build(address(this));
             _proxyAddresses[ids[i]] = address(proxy);
+            _tokenExists[ids[i]] = true;
         }
+        _ownedTokens[to] = ids;
     }
 
     function getProxyAddressForToken(uint256 tokenId) public view returns (address) {
         return _proxyAddresses[tokenId];
+    }
+
+    function getActionExecutor() public view returns (address) {
+        return _actionExecutor;
+    }
+
+    function getOwnedTokens(address owner) public view returns (uint256[] memory) {
+        return _ownedTokens[owner];
+    }
+
+    function isTokenIdAvailable(uint256 tokenId) public view returns (bool) {
+        return _tokenExists[tokenId] == false;
     }
 
     function setActionExecutor(address actionExecutor) public onlyOwner {
@@ -84,4 +100,12 @@ contract PetalexNFT is PetalexActions, ERC1155Upgradeable, UUPSUpgradeable, Owna
         uint256 amount = (_salePrice * _royaltyFee) / 1000;
         return (_royaltyReceiver, amount);
     }
+
+    function withdraw(address to) public onlyOwner {
+        payable(to).transfer(address(this).balance);
+    }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 }

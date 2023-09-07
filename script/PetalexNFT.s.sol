@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
 
 import {PetalexNFT} from "../src/PetalexNFT.sol";
 import {UUPSProxy} from "../src/Proxy.sol";
 
-contract Deploy is Script {
+contract DeployExample is Script {
     UUPSProxy public proxy;
 
     PetalexNFT public impl;
@@ -17,8 +17,12 @@ contract Deploy is Script {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         console.log("Deploying contracts with address", vm.addr(pk));
 
+        vm.startBroadcast(pk);
+
         _deployInitialVersion();
         //_upradeImplementation();
+
+        vm.stopBroadcast();
 
         console.log("Contracts deployed");
     }
@@ -31,10 +35,8 @@ contract Deploy is Script {
         proxy = new UUPSProxy(address(impl), "");
 
         // initialize implementation contract
-        (bool success,) = address(proxy).call(abi.encodeWithSignature("initialize()"));
-        if (!success) {
-            console.log("Initialization failed");
-        }
+        (bool success,) = address(proxy).call(abi.encodeWithSignature("initialize(address)", address(0)));
+        require(success, "Initialization failed");
     }
 
     // Upgrade logic contract

@@ -16,8 +16,20 @@ As this is an integration, fork tests are the only tests that are important.
 
 Uses env vars from a file `.env`. Copy and rename `.env.sample` and fill in the required variables.
 
+```
+# To load the variables in the .env file
+source .env
+
+# To deploy and verify our contract
+forge script script/PetalexInitial.s.sol:DeployPetalexInitial --rpc-url $RPC_URL --broadcast -vvvv --slow
+```
+
 ## Troubleshooting
 
 #### Test contracts are too large
 
 You need to update foundry to a later build. This error is suppressed in later versions for test contracts.
+
+#### Deploy script transaction failures
+
+`--slow` is necessary to stop all tx being sent and being mined out of order.

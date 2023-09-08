@@ -113,6 +113,40 @@ contract PetalexNFTMintTest is TestHelpers {
         assertEq(abi.decode(ownedTokensResult, (uint256[])), ids);
     }
 
+    function test_MultipleMintsUpdateOwnedTokens() public {
+        _deployProxyContracts();
+        _deployActions();
+
+        vm.prank(user);
+        bytes memory data = abi.encodePacked("0x");
+        {
+            uint256[] memory ids = new uint256[](2);
+            for (uint256 i = 0; i < 2; i++) {
+                ids[i] = i + 1;
+            }
+            (bool success,) = address(petalexProxy).call(abi.encodeWithSignature(MINT_BATCH_SIGNATURE, user, ids, data));
+            assertEq(success, true);
+        }
+        {
+            uint256[] memory ids2 = new uint256[](2);
+            for (uint256 i = 0; i < 2; i++) {
+                ids2[i] = i + 3;
+            }
+            (bool success,) = address(petalexProxy).call(abi.encodeWithSignature(MINT_BATCH_SIGNATURE, user, ids2, data));
+            assertEq(success, true);
+        }
+
+        (bool ownedTokenSuccess, bytes memory ownedTokensResult) =
+            address(petalexProxy).call(abi.encodeWithSignature(OWNED_TOKENS_SIGNATURE, user));
+        assertEq(ownedTokenSuccess, true);
+        uint256[] memory idsCompare = new uint256[](4);
+        idsCompare[0] = 1;
+        idsCompare[1] = 2;
+        idsCompare[2] = 3;
+        idsCompare[3] = 4;
+        assertEq(abi.decode(ownedTokensResult, (uint256[])), idsCompare);
+    }
+
     function test_Donation() public {
         _deployProxyContracts();
         _deployActions();

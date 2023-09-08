@@ -67,8 +67,8 @@ contract PetalexNFT is PetalexActions, ERC1155Upgradeable, UUPSUpgradeable, Owna
             DSProxy proxy = _proxyFactory.build(address(this));
             _proxyAddresses[ids[i]] = address(proxy);
             _tokenExists[ids[i]] = true;
-        }
-        _ownedTokens[to] = ids;
+            _ownedTokens[to].push(ids[i]);
+        }        
     }
 
     function getProxyAddressForToken(uint256 tokenId) public view returns (address) {

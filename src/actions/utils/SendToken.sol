@@ -9,6 +9,8 @@ import {ActionBase} from "../ActionBase.sol";
 contract SendToken is ActionBase {
     using SafeERC20 for IERC20;
 
+    address public constant ETH_ADDR = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
     struct Params {
         address token;
         address to;
@@ -22,11 +24,19 @@ contract SendToken is ActionBase {
         require(params.to != address(0), "Can't send to 0 address");
         require(params.to != address(this), "Can't send to action address");
 
-        if (params.amount == type(uint256).max) {
-            params.amount = IERC20(params.token).balanceOf(address(this));
+        if (params.token == ETH_ADDR) {
+            if (params.amount == type(uint256).max) {
+                params.amount = address(this).balance;
+            }
+            (bool success, ) = params.to.call{value: params.amount}("");
+            require(success, "SendToken: Eth send fail");
+        } else {
+            if (params.amount == type(uint256).max) {
+                params.amount = IERC20(params.token).balanceOf(address(this));
+            }
+            IERC20(params.token).safeTransfer(params.to, params.amount);
         }
-
-        IERC20(params.token).safeTransfer(params.to, params.amount);
+        
         return bytes32(params.amount);
     }
 

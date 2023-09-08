@@ -58,4 +58,96 @@ contract UtilsSendTest is ActionTestHelpers {
         assertEq(IERC20(MAINNET_WETH).balanceOf(proxyAddress), 0);
         assertEq(IERC20(MAINNET_WETH).balanceOf(user), 1000000e18);
     }
+
+    function test_CanMaxToken() public {
+        vm.selectFork(mainnetFork);
+        _deployActionExecutorAndProxy();
+        actionExecutor.setActionIdToAddress(1, address(pullToken));
+        actionExecutor.setActionIdToAddress(2, address(sendToken));
+        uint256 tokenId = mintNFT(user);
+
+        bytes[] memory callData = new bytes[](2);
+        PullToken.Params memory params = PullToken.Params(MAINNET_WETH, user, 10e18);
+        SendToken.Params memory sendParams = SendToken.Params(MAINNET_WETH, user, type(uint256).max);
+        callData[0] = abi.encode(params);
+        callData[1] = abi.encode(sendParams);
+        uint8[] memory actionIds = new uint8[](2);
+        actionIds[0] = 1;
+        actionIds[1] = 2;
+
+        (bool success, bytes memory data) =
+            address(petalexProxy).call(abi.encodeWithSignature(GET_PROXY_ADDRESS_FOR_TOKEN_SIGNATURE, tokenId));
+        assertEq(success, true);
+
+        vm.prank(user);
+        address proxyAddress = abi.decode(data, (address));
+        IERC20(MAINNET_WETH).approve(proxyAddress, 10e18);
+
+        vm.prank(user);
+        bytes32[] memory response =
+            actionExecutor.executeActionList(ActionExecutor.ActionList(callData, actionIds, tokenId));
+        assertEq(response.length, 2);
+        assertEq(response[0], bytes32(uint256(10e18)));
+        assertEq(response[1], bytes32(uint256(10e18)));
+        assertEq(IERC20(MAINNET_WETH).balanceOf(proxyAddress), 0);
+        assertEq(IERC20(MAINNET_WETH).balanceOf(user), 1000000e18);
+    }
+
+    function test_CanSendEth() public {
+        vm.selectFork(mainnetFork);
+        _deployActionExecutorAndProxy();
+        actionExecutor.setActionIdToAddress(1, address(pullToken));
+        actionExecutor.setActionIdToAddress(2, address(sendToken));
+        uint256 tokenId = mintNFT(user);
+
+        bytes[] memory callData = new bytes[](1);
+        SendToken.Params memory sendParams = SendToken.Params(address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), user, 10e18);
+        callData[0] = abi.encode(sendParams);
+        uint8[] memory actionIds = new uint8[](1);
+        actionIds[0] = 2;
+
+        (bool success, bytes memory data) =
+            address(petalexProxy).call(abi.encodeWithSignature(GET_PROXY_ADDRESS_FOR_TOKEN_SIGNATURE, tokenId));
+        assertEq(success, true);
+
+        address proxyAddress = abi.decode(data, (address));
+        deal(proxyAddress, 10e18);
+
+        vm.prank(user);
+        bytes32[] memory response =
+            actionExecutor.executeActionList(ActionExecutor.ActionList(callData, actionIds, tokenId));
+        assertEq(response.length, 1);
+        assertEq(response[0], bytes32(uint256(10e18)));
+        assertEq(proxyAddress.balance, 0);
+        assertEq(user.balance, 10e18);
+    }
+
+    function test_CanSendMaxEth() public {
+        vm.selectFork(mainnetFork);
+        _deployActionExecutorAndProxy();
+        actionExecutor.setActionIdToAddress(1, address(pullToken));
+        actionExecutor.setActionIdToAddress(2, address(sendToken));
+        uint256 tokenId = mintNFT(user);
+
+        bytes[] memory callData = new bytes[](1);
+        SendToken.Params memory sendParams = SendToken.Params(address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), user, type(uint256).max);
+        callData[0] = abi.encode(sendParams);
+        uint8[] memory actionIds = new uint8[](1);
+        actionIds[0] = 2;
+
+        (bool success, bytes memory data) =
+            address(petalexProxy).call(abi.encodeWithSignature(GET_PROXY_ADDRESS_FOR_TOKEN_SIGNATURE, tokenId));
+        assertEq(success, true);
+
+        address proxyAddress = abi.decode(data, (address));
+        deal(proxyAddress, 10e18);
+
+        vm.prank(user);
+        bytes32[] memory response =
+            actionExecutor.executeActionList(ActionExecutor.ActionList(callData, actionIds, tokenId));
+        assertEq(response.length, 1);
+        assertEq(response[0], bytes32(uint256(10e18)));
+        assertEq(proxyAddress.balance, 0);
+        assertEq(user.balance, 10e18);
+    }
 }

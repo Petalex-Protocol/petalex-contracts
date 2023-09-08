@@ -28,7 +28,6 @@ contract LiquityOpenTest is LiquityHelpers {
         _deployActionExecutorAndProxy();
         actionExecutor.setActionIdToAddress(1, address(liquityOpen));
         uint256 tokenId = mintNFT(user);
-        address proxyAddress = IPetalexNFT(address(petalexProxy)).getProxyAddressForToken(tokenId);
 
         bytes[] memory callData = new bytes[](1);
         uint256 col = 10e18;
@@ -39,7 +38,6 @@ contract LiquityOpenTest is LiquityHelpers {
         uint8[] memory actionIds = new uint8[](1);
         actionIds[0] = 1;
 
-        deal(proxyAddress, col);
         vm.expectRevert(bytes("BorrowerOps: Trove's net debt must be greater than minimum"));
         vm.prank(user);
         actionExecutor.executeActionList{value: col}(ActionExecutor.ActionList(callData, actionIds, tokenId));
@@ -50,7 +48,6 @@ contract LiquityOpenTest is LiquityHelpers {
         _deployActionExecutorAndProxy();
         actionExecutor.setActionIdToAddress(1, address(liquityOpen));
         uint256 tokenId = mintNFT(user);
-        address proxyAddress = IPetalexNFT(address(petalexProxy)).getProxyAddressForToken(tokenId);
 
         bytes[] memory callData = new bytes[](1);
         uint256 col = 10e18;
@@ -62,7 +59,6 @@ contract LiquityOpenTest is LiquityHelpers {
         uint8[] memory actionIds = new uint8[](1);
         actionIds[0] = 1;
 
-        deal(proxyAddress, col);
         vm.expectRevert(bytes("BorrowerOps: An operation that would result in ICR < MCR is not permitted"));
         vm.prank(user);
         actionExecutor.executeActionList{value: col}(ActionExecutor.ActionList(callData, actionIds, tokenId));
@@ -84,7 +80,6 @@ contract LiquityOpenTest is LiquityHelpers {
         uint8[] memory actionIds = new uint8[](1);
         actionIds[0] = 1;
 
-        deal(proxyAddress, col);
         vm.prank(user);
         bytes32[] memory response =
             actionExecutor.executeActionList{value: col}(ActionExecutor.ActionList(callData, actionIds, tokenId));
@@ -107,7 +102,6 @@ contract LiquityOpenTest is LiquityHelpers {
         SendToken sendToken = new SendToken();
         actionExecutor.setActionIdToAddress(3, address(sendToken));
         uint256 tokenId = mintNFT(user);
-        address proxyAddress = IPetalexNFT(address(petalexProxy)).getProxyAddressForToken(tokenId);
 
         bytes[] memory callData = new bytes[](2);
         uint8[] memory actionIds = new uint8[](2);
@@ -124,7 +118,6 @@ contract LiquityOpenTest is LiquityHelpers {
             actionIds[1] = 3;
         }
 
-        deal(proxyAddress, col);
         vm.prank(user);
         bytes32[] memory response =
             actionExecutor.executeActionList{value: col}(ActionExecutor.ActionList(callData, actionIds, tokenId));

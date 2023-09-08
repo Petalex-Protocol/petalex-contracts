@@ -36,6 +36,10 @@ contract ActionExecutor is Ownable {
         require(actionList.actionIds.length == actionList.callData.length, "Length mismatch");
 
         address proxy = _nftProxy.getProxyAddressForToken(actionList.tokenId);
+        if (msg.value > 0) {
+            (bool sent, ) = proxy.call{value: msg.value}("");
+            require(sent, "ActionExecutor: Failed to send");
+        }
         bytes32[] memory response = new bytes32[](actionList.callData.length);
 
         // if flashloan then do that one first and call the rest after from the callback

@@ -26,6 +26,8 @@ import {LiquityRedeem} from "src/actions/liquity/LiquityRedeem.sol";
 import {PullToken} from "src/actions/utils/PullToken.sol";
 import {SendToken} from "src/actions/utils/SendToken.sol";
 import {PermitPullToken} from "src/actions/utils/PermitPullToken.sol";
+import {Wrap} from "src/actions/utils/Wrap.sol";
+import {Unwrap} from "src/actions/utils/Unwrap.sol";
 
 import "./helpers/MainnetAddresses.sol";
 
@@ -72,6 +74,56 @@ contract DeployPetalexInitial is MainnetAddresses {
         require(success, "Initialization failed");
     }
 
+    function _deployExchangeActions() internal {
+        UniswapV3SwapExactInput exchange = new UniswapV3SwapExactInput(MAINNET_SWAP_ROUTER);
+
+        actionExecutor.setActionIdToAddress(4, address(exchange));
+    }
+
+    function _deployFlashLoanActions() internal {
+        FlashUniV3 flashUniV3 = new FlashUniV3(MAINNET_UNISWAP_FACTORY, address(actionExecutor), address(proxy));
+
+        actionExecutor.setActionIdToAddress(2, address(flashUniV3));
+    }
+
+    function _deployGravitaActions() internal {
+        GravitaAdjust gravitaAdjust = new GravitaAdjust(MAINNET_GRAVITA_BORROWER_OPERATIONS, MAINNET_GRAI);
+        GravitaOpen gravitaOpen = new GravitaOpen(MAINNET_GRAVITA_BORROWER_OPERATIONS);
+        GravitaClose gravitaClose = new GravitaClose(MAINNET_GRAVITA_BORROWER_OPERATIONS, 1);
+        GravitaRedeem gravitaRedeem = new GravitaRedeem(MAINNET_GRAVITA_VESSEL_MANAGER_OPERATIONS, MAINNET_GRAI);
+
+        actionExecutor.setActionIdToAddress(5, address(gravitaOpen));
+        actionExecutor.setActionIdToAddress(6, address(gravitaAdjust));
+        actionExecutor.setActionIdToAddress(7, address(gravitaClose));
+        actionExecutor.setActionIdToAddress(8, address(gravitaRedeem));
+    }
+
+    function _deployLiquityActions() internal {
+        LiquityAdjust liquityAdjust = new LiquityAdjust(MAINNET_LIQUITY_BORROWER_OPERATIONS, MAINNET_LIQUITY_LUSD);
+        LiquityOpen liquityOpen = new LiquityOpen(MAINNET_LIQUITY_BORROWER_OPERATIONS);
+        LiquityClose liquityClose = new LiquityClose(MAINNET_LIQUITY_BORROWER_OPERATIONS);
+        LiquityRedeem liquityRedeem = new LiquityRedeem(MAINNET_LIQUITY_TROVE_MANAGER, MAINNET_LIQUITY_LUSD);
+
+        actionExecutor.setActionIdToAddress(9, address(liquityOpen));
+        actionExecutor.setActionIdToAddress(10, address(liquityAdjust));
+        actionExecutor.setActionIdToAddress(11, address(liquityClose));
+        actionExecutor.setActionIdToAddress(12, address(liquityRedeem));
+    }
+
+    function _deployUtilActions() internal {
+        PullToken pullToken = new PullToken();
+        SendToken sendToken = new SendToken();
+        PermitPullToken permitPullToken = new PermitPullToken(MAINNET_PERMIT2);
+        Wrap wrap = new Wrap(MAINNET_WETH);
+        Unwrap unwrap = new Unwrap(MAINNET_WETH);
+
+        actionExecutor.setActionIdToAddress(1, address(sendToken));
+        actionExecutor.setActionIdToAddress(3, address(pullToken));
+        actionExecutor.setActionIdToAddress(13, address(permitPullToken));
+        actionExecutor.setActionIdToAddress(14, address(wrap));
+        actionExecutor.setActionIdToAddress(15, address(unwrap));
+    }
+
     function _deployActions(address owner) internal {
         actionRegistry = new ActionRegistry(owner);
         actionExecutor =
@@ -80,42 +132,10 @@ contract DeployPetalexInitial is MainnetAddresses {
         dsAuthority.setAuthority(address(actionExecutor), true);
         IPetalexNFT(address(proxy)).setActionExecutor(address(actionExecutor));
 
-        // EXCHANGE
-        UniswapV3SwapExactInput exchange = new UniswapV3SwapExactInput(MAINNET_SWAP_ROUTER);
-
-        // FLASH LOAN
-        FlashUniV3 flashUniV3 = new FlashUniV3(MAINNET_UNISWAP_FACTORY, address(actionExecutor), address(proxy));
-        
-        // GRAVITA
-        GravitaAdjust gravitaAdjust = new GravitaAdjust(MAINNET_GRAVITA_BORROWER_OPERATIONS, MAINNET_GRAI);
-        GravitaOpen gravitaOpen = new GravitaOpen(MAINNET_GRAVITA_BORROWER_OPERATIONS);
-        GravitaClose gravitaClose = new GravitaClose(MAINNET_GRAVITA_BORROWER_OPERATIONS, 1);
-        GravitaRedeem gravitaRedeem = new GravitaRedeem(MAINNET_GRAVITA_VESSEL_MANAGER_OPERATIONS, MAINNET_GRAI);
-
-        // LIQUITY
-        LiquityAdjust liquityAdjust = new LiquityAdjust(MAINNET_LIQUITY_BORROWER_OPERATIONS, MAINNET_LIQUITY_LUSD);
-        LiquityOpen liquityOpen = new LiquityOpen(MAINNET_LIQUITY_BORROWER_OPERATIONS);
-        LiquityClose liquityClose = new LiquityClose(MAINNET_LIQUITY_BORROWER_OPERATIONS);
-        LiquityRedeem liquityRedeem = new LiquityRedeem(MAINNET_LIQUITY_TROVE_MANAGER, MAINNET_LIQUITY_LUSD);
-
-        // UTILS
-        PullToken pullToken = new PullToken();
-        SendToken sendToken = new SendToken();
-        PermitPullToken permitPullToken = new PermitPullToken(MAINNET_PERMIT2);
-
-        // Set action ids
-        actionExecutor.setActionIdToAddress(1, address(sendToken));
-        actionExecutor.setActionIdToAddress(2, address(flashUniV3));
-        actionExecutor.setActionIdToAddress(3, address(pullToken));
-        actionExecutor.setActionIdToAddress(4, address(exchange));
-        actionExecutor.setActionIdToAddress(5, address(gravitaOpen));
-        actionExecutor.setActionIdToAddress(6, address(gravitaAdjust));
-        actionExecutor.setActionIdToAddress(7, address(gravitaClose));
-        actionExecutor.setActionIdToAddress(8, address(gravitaRedeem));
-        actionExecutor.setActionIdToAddress(9, address(liquityOpen));
-        actionExecutor.setActionIdToAddress(10, address(liquityAdjust));
-        actionExecutor.setActionIdToAddress(11, address(liquityClose));
-        actionExecutor.setActionIdToAddress(12, address(liquityRedeem));
-        actionExecutor.setActionIdToAddress(13, address(permitPullToken));
+        _deployUtilActions();
+        _deployExchangeActions();
+        _deployFlashLoanActions();
+        _deployGravitaActions();
+        _deployLiquityActions();
     }
 }

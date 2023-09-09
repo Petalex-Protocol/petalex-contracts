@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import "forge-std/Script.sol";
 
 contract MainnetAddresses is Script {
+    address public constant MAINNET_WETH = address(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     address public constant MAINNET_GRAI = address(0x15f74458aE0bFdAA1a96CA1aa779D715Cc1Eefe4);
     address public constant MAINNET_GRAVITA_SORTED_VESSELS = address(0xF31D88232F36098096d1eB69f0de48B53a1d18Ce);
     address public constant MAINNET_GRAVITA_BORROWER_OPERATIONS = address(0x2bCA0300c2aa65de6F19c2d241B54a445C9990E2);

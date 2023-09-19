@@ -42,6 +42,7 @@ contract TestHelpers is Test {
     address public constant MAINNET_GRAI_USDC_POOL = address(0x5db3D38bD40C862BA1fDB2286c32A62ab954d36D);
     address public constant MAINNET_USDC_ETH_POOL = address(0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640);
     address public constant MAINNET_STFRXETH = address(0xac3E018457B222d93114458476f3E3416Abbe38F);
+    address public constant MAINNET_RETH = address(0xae78736Cd615f374D3085123A210448E74Fc6393);
 
     string public constant GET_PROXY_ADDRESS_FOR_TOKEN_SIGNATURE = "getProxyAddressForToken(uint256)";
     string public constant MINT_BATCH_SIGNATURE = "mintBatch(address,uint256[],bytes)";

@@ -13,6 +13,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SendToken} from "src/actions/utils/SendToken.sol";
 import {FlashUniV3} from "src/actions/flashloan/FlashUniV3.sol";
 import {UniswapV3SwapExactInput} from "src/actions/exchange/UniswapV3SwapExactInput.sol";
+import {IPriceFeed} from "Gravita-SmartContracts/contracts/Interfaces/IPriceFeed.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract GravitaRedeemTest is ActionTestHelpers {
@@ -125,10 +126,11 @@ contract GravitaRedeemTest is ActionTestHelpers {
 
         {
             // Redeem GRAI for RETH
+            uint256 price = IPriceFeed(MAINNET_PRICE_FEED).fetchPrice(MAINNET_RETH);
             (address firstRedemptionHint, uint256 partialRedemptionHintNewICR, uint256 truncatedGraiAmount ) = IVesselManagerOperations(MAINNET_VESSEL_MANAGER_OPERATIONS).getRedemptionHints(
                 MAINNET_RETH,
-                15399891878336491376658,
-                1790256288509586410169, // price feed value
+                (850e16 * price) / 1e18 * 10000 / 9883, // predict swap slippage
+                price, // price feed value
                 0
             );
             uint256 size = ISortedVessels(MAINNET_SORTED_VESSELS).getSize(MAINNET_RETH);

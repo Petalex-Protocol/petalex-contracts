@@ -21,6 +21,9 @@ contract Wrap is ActionBase {
         Params memory params = parseInputs(_callData);
 
         require(params.amount > 0, "Amount can't be 0");
+        if (params.amount == type(uint256).max) {
+            params.amount = address(this).balance;
+        }
         _weth.deposit{ value: params.amount }();
         return bytes32(params.amount);
     }

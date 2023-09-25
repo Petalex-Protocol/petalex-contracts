@@ -21,7 +21,9 @@ contract Unwrap is ActionBase {
         Params memory params = parseInputs(_callData);
 
         require(params.amount > 0, "Amount can't be 0");
-
+        if (params.amount == type(uint256).max) {
+            params.amount = _weth.balanceOf(address(this));
+        }
         _weth.withdraw(params.amount);
         return bytes32(params.amount);
     }

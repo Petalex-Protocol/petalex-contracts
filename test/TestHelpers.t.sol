@@ -43,6 +43,7 @@ contract TestHelpers is Test {
     address public constant MAINNET_USDC_ETH_POOL = address(0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640);
     address public constant MAINNET_STFRXETH = address(0xac3E018457B222d93114458476f3E3416Abbe38F);
     address public constant MAINNET_RETH = address(0xae78736Cd615f374D3085123A210448E74Fc6393);
+    address public constant MAINNET_PRICE_FEED = address(0x89F1ecCF2644902344db02788A790551Bb070351);
 
     string public constant GET_PROXY_ADDRESS_FOR_TOKEN_SIGNATURE = "getProxyAddressForToken(uint256)";
     string public constant MINT_BATCH_SIGNATURE = "mintBatch(address,uint256[],bytes)";
@@ -53,7 +54,7 @@ contract TestHelpers is Test {
     bytes32 public constant PERMIT_TRANSFER_FROM_TYPEHASH = keccak256(
         "PermitTransferFrom(TokenPermissions permitted,address spender,uint256 nonce,uint256 deadline)TokenPermissions(address token,uint256 amount)"
     );
-// 2430425336253346020
+
     uint256 public userKey = 1;
     address public user = vm.addr(userKey);
 

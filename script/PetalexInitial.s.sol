@@ -3,6 +3,8 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
 
+import {TimelockController} from "@openzeppelin/contracts/governance/TimelockController.sol";
+
 import {PetalexNFT} from "src/PetalexNFT.sol";
 import {UUPSProxy} from "src/Proxy.sol";
 import {IPetalexNFT} from "src/interfaces/IPetalexNFT.sol";
@@ -51,6 +53,9 @@ contract DeployPetalexInitial is MainnetAddresses {
         _deployDSProxyFactory(vm.addr(pk));
         _deployInitialVersion();
         _deployActions(vm.addr(pk));
+        
+        // Transfer ownership of proxy to multisig
+        //_deployTimelockAndTransferOwnership();
 
         vm.stopBroadcast();
 
@@ -137,5 +142,15 @@ contract DeployPetalexInitial is MainnetAddresses {
         _deployFlashLoanActions();
         _deployGravitaActions();
         _deployLiquityActions();
+    }
+
+    function _deployTimelockAndTransferOwnership() internal {
+        address multisig = vm.envAddress("GNOSIS_SAFE_ADDRESS");
+        address[] memory propExecArray = new address[](1);
+        propExecArray[0] = multisig;
+        TimelockController timelock = new TimelockController(2 days, propExecArray, propExecArray, address(0));
+
+        (bool success,) = address(proxy).call(abi.encodeWithSignature("transferOwner(address)", address(timelock)));
+        require(success, "Transfer ownership failed");
     }
 }
